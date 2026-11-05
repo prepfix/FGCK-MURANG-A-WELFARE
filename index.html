@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LCA Welfare Tracker</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b6b3a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="LCA Welfare">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--tx:#1b1f24;--mu:#667085;--bd:#dfe3e8;--ac:#0b6b3a;--ac2:#084d2a;--soft:#e8f4ee;--bad:#b42318}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--soft);color:var(--tx);font:14.5px "Segoe UI",system-ui,sans-serif;transition:background .45s ease;display:flex;flex-direction:column}
+body,header,.tabbar,.tabs button,.card,button,.kp div,th{transition:background-color .45s ease,color .45s ease,border-color .45s ease}
+header{background:linear-gradient(100deg,var(--ac2),var(--ac));color:#fff;padding:14px 28px 12px;display:flex;align-items:center;gap:16px;text-align:left;box-shadow:0 2px 8px rgba(0,0,0,.18);position:relative;z-index:2}
+header .logo{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center;font-weight:800;font-size:15px;letter-spacing:.5px;border:1px solid rgba(255,255,255,.35)}
+header .t b{display:block;font-size:16px;letter-spacing:.6px}header .t b+b{font-size:13px;font-weight:600;opacity:.92}
+header .t span{display:block;font-size:12px;opacity:.8;margin-top:2px}
+.tabbar{background:var(--ac2);padding:8px 24px 0;position:relative;z-index:1}
+.tabs{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;margin:0;align-items:flex-end}
+.tabs button{border:0;border-radius:10px 10px 0 0;padding:10px 20px;background:rgba(255,255,255,.10);color:#fff;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;white-space:nowrap;position:relative;top:1px}
+.tabs button:hover{background:rgba(255,255,255,.22)}
+.tabs button .ic{width:9px;height:9px;border-radius:50%;background:var(--tc);box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+.tabs button.on{background:var(--soft);color:var(--ac2);box-shadow:0 -3px 0 var(--ac) inset}
+main{flex:1;overflow:auto;max-width:none;width:100%;margin:0;padding:22px 28px 30px;background:var(--soft)}
+main>#v{max-width:1180px;margin:0 auto}
+button,input,select,textarea{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:8px 12px}
+input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--ac) 45%,transparent);border-color:var(--ac)}
+button{cursor:pointer}button:hover{border-color:var(--ac);color:var(--ac2)}
+button.on,button.p{background:var(--ac);color:#fff;border-color:var(--ac)}button.p:hover,button.on:hover{background:var(--ac2);color:#fff}
+.card{background:var(--card);border:1px solid color-mix(in srgb,var(--ac) 18%,var(--bd));border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(16,24,40,.06)}
+.card>b:first-child{color:var(--ac2)}
+table{border-collapse:collapse;width:100%}
+th{background:var(--soft);color:var(--ac2)!important;font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+tr:hover td{background:color-mix(in srgb,var(--ac) 5%,#fff)}
+.kp div{border-color:color-mix(in srgb,var(--ac) 18%,var(--bd));border-top:3px solid var(--ac)}
+
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd);white-space:nowrap}
+th{color:var(--mu);font-size:13px}.r{text-align:right}.mu{color:var(--mu);font-size:13px}.bad{color:var(--bad)}
+.tot{font-size:22px;font-weight:700;color:var(--ac)}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.kp div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px}.kp b{display:block;font-size:18px;color:var(--ac)}
+.ph{display:none}
+a.lk{color:var(--ac);font-weight:600;text-decoration:underline dotted;cursor:pointer}a.lk:hover{text-decoration:underline}
+.ov{position:fixed;inset:0;background:rgba(15,23,32,.55);z-index:50;overflow:auto;padding:16px}
+.md{background:var(--bg);max-width:760px;margin:0 auto;border-radius:14px;padding:16px;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.md h2{margin:0 0 2px;font-size:20px}.md .sub{color:var(--mu);font-size:13px;margin-bottom:10px}
+.big{border-radius:12px;padding:14px;margin-bottom:12px;color:#fff;font-weight:600}.big.ok{background:var(--ac)}.big.no{background:var(--bad)}.big small{display:block;font-weight:400;opacity:.92;margin-top:2px}
+.chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600}
+.chip.Paid{background:#dcf5e6;color:#0b6b3a}.chip.Part{background:#fff1d6;color:#8a5a00}.chip.Unpaid{background:#fde4e1;color:#b42318}.chip.Bereaved{background:#e8ecf1;color:#475467}
+.xs{padding:4px 9px;font-size:13px}
+@media(max-width:560px){.ov{padding:6px}.md{padding:10px}}
+@media print{body.pm header,body.pm main{display:none!important}body.pm .ov{position:static;background:none;padding:0;overflow:visible}body.pm .md{box-shadow:none;max-width:none;padding:0;background:#fff}.big{color:#000!important;background:#fff!important;border:2px solid #333}header~main .tabs,.noprint{display:none!important}body{background:#fff}.ph{display:block;text-align:center;margin-bottom:10px}.card,.kp div{border-color:#999}}
+
+.tabs button{--tc:#fff}
+.tabs button.on,.tabs button.on:hover{background:var(--soft);color:var(--ac2);border-color:transparent}
+@media(max-width:700px){header{padding:10px 14px}.tabbar{padding:6px 8px 0}.tabs button{padding:9px 12px}main{padding:14px 12px}}
+@media print{header,.tabbar{display:none!important}main{padding:0;background:#fff}body{background:#fff;display:block}}
+
+table.rg{border:2px solid #7b8794;width:auto;min-width:100%}
+table.rg th,table.rg td{border:1px solid #c3cad2;padding:6px 9px;vertical-align:middle}
+table.rg thead tr:first-child th{background:var(--ac2);color:#fff!important;text-align:center;font-size:12px;letter-spacing:.6px}
+table.rg thead tr+tr th{background:var(--soft);color:var(--ac2)!important}
+table.rg .gb{border-right:2px solid var(--ac)}
+table.rg tr.fs td{border-top:3px solid var(--ac)}
+table.rg tr.fa td{background:#fff}
+table.rg tr.fb td{background:color-mix(in srgb,var(--ac) 7%,#fff)}
+table.rg td.un{font-size:18px;font-weight:800;color:var(--ac2);text-align:center;background:var(--soft)!important}
+table.rg td.kd{white-space:normal;min-width:150px;max-width:190px;vertical-align:top;line-height:1.4;font-size:13px}table.rg td.kd div{padding:1px 0}table.rg td.kd .kc{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+table.rg td.ty{text-align:center;font-weight:600}
+table.rg tr.dead td{background:#fee4e2!important;color:#7a271a;border-top:1px solid #f04438;border-bottom:1px solid #f04438}
+table.rg tr.dead td.dn{box-shadow:inset 7px 0 0 #b42318;font-weight:800;padding-left:16px;color:#b42318;background:#fecdca!important}table.rg tr.dead td.dn a,table.rg tr.dead td.dn *{color:#b42318}
+.chip.dead{background:#b42318;color:#fff}
+.dx{color:#c0261a;font-weight:700}.dx small{display:none}.dn-d,.dn-d a{color:#c0261a!important;font-weight:700}
+@media print{.dx,.dn-d,.dn-d a{color:#c0261a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.ln{border:1px solid var(--bd);border-radius:10px;padding:10px;margin-top:10px;background:color-mix(in srgb,var(--ac) 4%,#fff)}
+.lt{font-weight:700;color:var(--ac2);margin-bottom:6px}
+.rl,.dd{display:inline-flex;gap:4px;align-items:center}
+input[type=checkbox]{width:auto;padding:0}
+@media print{table.rg tr.dead td{background:#fecdca!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+/* clean list look (not a spreadsheet grid) */
+#rt{border-radius:12px}
+table.rg{border:0;min-width:100%}
+table.rg th,table.rg td{border:0;border-bottom:1px solid #eef0f3;padding:9px 12px}
+table.rg thead tr:first-child{display:none}
+table.rg thead tr+tr th{background:transparent;border-bottom:2px solid var(--ac);font-size:11.5px;color:var(--mu)!important;text-align:left}
+table.rg .gb,table.rg td.gb{border-right:0}
+table.rg tr.fs td{border-top:16px solid var(--card)}
+table.rg tr.fa td{background:color-mix(in srgb,var(--ac) 3%,#fff)}
+table.rg tr.fb td{background:color-mix(in srgb,var(--ac) 3%,#fff)}
+table.rg tr.fs:first-of-type td{border-top:0}
+table.rg td.un{background:transparent!important;border-left:5px solid var(--ac);font-size:17px;border-radius:10px 0 0 10px}
+table.rg td.ty{font-weight:600;font-size:12.5px;color:var(--mu)}
+table.rg td.kd{max-width:340px;min-width:300px}
+table.rg td.kd div.kc{margin-bottom:4px}
+.kch{display:inline-block;background:#fff;border:1px solid var(--bd);border-radius:99px;padding:1px 9px;margin:0 4px 4px 0;font-size:12.5px;line-height:1.5}
+table.rg tr.dead td{border-top:0;border-bottom:1px solid #f4b4ae}
+
+/* professional typography: names bold, labels in capitals */
+body{font-size:14px;-webkit-font-smoothing:antialiased}
+header .t b{text-transform:uppercase;letter-spacing:.8px}
+.card>b:first-child,.card .lt{text-transform:uppercase;letter-spacing:.6px;font-size:12.5px}
+th{text-transform:uppercase;letter-spacing:.7px;font-size:11.5px;font-weight:700}
+a.lk{font-weight:700;text-decoration:none;color:var(--ac2)}
+a.lk:hover{text-decoration:underline}
+table.rg td.dn{font-weight:700;font-size:14.5px}
+table.rg td.un{font-weight:800;letter-spacing:.5px}
+table.rg td.ty,table.rg td.ro{text-transform:uppercase;letter-spacing:.6px;font-size:11.5px;font-weight:700;color:var(--mu)}
+table.rg td.pn{font-variant-numeric:tabular-nums;color:#344054}
+table.rg tr.dead td.ro{color:#b42318}
+.dx{text-transform:uppercase;letter-spacing:.3px;font-size:12.5px}
+.chip{text-transform:uppercase;letter-spacing:.5px;font-size:10.5px;font-weight:700;padding:3px 10px}
+.kch{font-weight:600}
+table.rg td.kd .kc{font-weight:700}
+.md h2{text-transform:uppercase;letter-spacing:.5px;font-size:18px}
+.md .sub{text-transform:uppercase;letter-spacing:.4px;font-size:11.5px;font-weight:600}
+.md td.mu{text-transform:uppercase;letter-spacing:.4px;font-size:11.5px;font-weight:700;width:34%}
+.md td{border-bottom:1px solid #eef0f3}
+.big{text-transform:uppercase;letter-spacing:.6px}.big small{text-transform:none;letter-spacing:0}
+.kp div{text-transform:uppercase;letter-spacing:.4px;font-size:11px;font-weight:700;color:var(--mu)}.kp b{text-transform:none;letter-spacing:0;font-size:19px}
+td a.lk{white-space:nowrap}
+.stt{text-transform:uppercase;letter-spacing:.5px;font-size:12px;font-weight:700}
+.md .card .row>b{text-transform:uppercase;letter-spacing:.5px}
+
+/* full cell borders (vertical and horizontal lines inside every column) */
+table.rg{border:1px solid #98a2b3;border-collapse:collapse}
+table.rg th,table.rg td{border:1px solid #c3cad2!important;padding:8px 11px}
+table.rg thead tr:first-child{display:table-row}
+table.rg thead tr:first-child th{background:var(--ac2);color:#fff!important;text-align:center;letter-spacing:.8px;border-color:rgba(255,255,255,.4)!important}
+table.rg thead tr+tr th{background:var(--soft);color:var(--ac2)!important;border-bottom:2px solid var(--ac)!important}
+table.rg tr.fs td{border-top:3px solid var(--ac)!important}
+table.rg tr.fs:first-of-type td{border-top:1px solid #c3cad2!important}
+table.rg tr.fa td{background:#fff}
+table.rg tr.fb td{background:color-mix(in srgb,var(--ac) 6%,#fff)}
+table.rg td.un{background:var(--soft)!important;border-left:5px solid var(--ac)!important;border-radius:0;text-align:center}
+table.rg td.ty{text-align:center}
+table.rg tr.dead td{border-color:#f0a8a0!important;background:#fee4e2!important}
+#v table:not(.rg){border:1px solid #98a2b3}
+#v table:not(.rg) th,#v table:not(.rg) td{border:1px solid #d0d5dd}
+#v table:not(.rg) th{background:var(--soft)}
+button:disabled{opacity:.45;cursor:not-allowed}button:disabled:hover{border-color:var(--bd);color:var(--tx)}
+/* compact rows */
+table.rg th,table.rg td{padding:3px 8px!important;line-height:1.25}
+table.rg td.un{font-size:15px}
+table.rg td.dn{font-size:14px}
+table.rg td.kd{min-width:400px;max-width:520px;font-size:12.5px;line-height:1.2}
+table.rg td.kd>div{display:inline}
+table.rg td.kd div.kc{margin:0 8px 0 0;font-size:10px;display:inline-block!important}
+.kch{padding:0 7px;margin:0 3px 2px 0;font-size:12px;line-height:1.35}
+table.rg tr.fs td{border-top:2px solid var(--ac)!important}
+table.rg .chip{padding:1px 8px}
+table.rg .xs{padding:2px 8px;font-size:12.5px}
+#v table:not(.rg) th,#v table:not(.rg) td{padding:4px 8px}
+</style></head><body>
+<header><div class="logo">LCA</div><div class="t"><b>FULL GOSPEL CHURCHES OF KENYA</b><b>MURANG'A TOWN LCA WELFARE GROUP</b><span>Registration, Cases &amp; Contributions (Paybill)</span></div></header>
+<div class="tabbar"><div class="tabs" id="tabs"></div></div>
+<main><div id="v"></div></main>
+<script>const SEED={"reg":[],"cases":[]};</script>
+<script>
+// optional: Excel support when online
+(function(){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onerror=function(){};document.head.appendChild(s)})();
+const K='lca_welfare_v1';let S={members:[],tx:[]};
+try{const x=localStorage.getItem(K);if(x)S=JSON.parse(x)}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+let tab='reg',av='fam',q='',msg='',sel='',yr='',mo='';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>Number(n).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
+const memName=a=>(S.members.find(m=>m.acc===a)||{}).name||famName(a);
+function famName(a){const k=nu(a),g=groups().find(g=>g.u&&nu(g.u)===k);return g?hf(g.r).map(m=>m.n.trim()).join(' & '):''}
+function famByAcc(a){const k=nu(a);return groups().find(g=>g.u&&nu(g.u)===k)}
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const p2=n=>String(n).padStart(2,'0');
+
+function csv(text){const rows=[];let r=[],c='',q=false;text=text.replace(/^\uFEFF/,'');
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){if(ch=='"'){if(text[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}
+    else if(ch=='"')q=true;else if(ch==','){r.push(c);c=''}
+    else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&text[i+1]=='\n')i++;r.push(c);rows.push(r);r=[];c=''}
+    else c+=ch}
+  if(c!==''||r.length){r.push(c);rows.push(r)}return rows}
+function parseTime(v){
+  if(v instanceof Date)return v;
+  if(typeof v==='number'&&window.XLSX){const d=XLSX.SSF.parse_date_code(v);return new Date(d.y,d.m-1,d.d,d.H,d.M,d.S)}
+  const s=String(v).trim();let m;
+  if(m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})[ T]+(\d{1,2}):(\d{2}):?(\d{2})?/))return new Date(+m[1],m[2]-1,+m[3],+m[4],+m[5],+(m[6]||0));
+  if(m=s.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})[ T]*(\d{1,2})?:?(\d{2})?:?(\d{2})?/))return new Date(+m[3],m[2]-1,+m[1],+(m[4]||0),+(m[5]||0),+(m[6]||0));
+  if(m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))return new Date(+m[1],m[2]-1,+m[3]);
+  const d=new Date(s);return isNaN(d)?null:d}
+const norm=h=>String(h||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function pick(row,keys){for(const k in row){const n=norm(k);if(keys.some(x=>n===x||n.includes(x)))return row[k]}return ''}
+function rowToTx(r){
+  const ref=String(pick(r,['receiptno','receipt','transactionid','reference','ref'])).trim().toUpperCase();
+  const dt=parseTime(pick(r,['completiontime','transactiontime','date','time']));
+  const amt=parseFloat(String(pick(r,['paidin','amount','credit'])).replace(/,/g,''));
+  const details=String(pick(r,['details','description']));
+  const other=String(pick(r,['otherpartyinfo','msisdn','phone','sender']));
+  let acc=String(pick(r,['acno','accountno','accountnumber','billrefnumber','account'])).trim();
+  if(!acc){const m=details.match(/Acc(?:ount)?\.?\s*(?:No\.?)?\s*[:\-]?\s*(\S+)/i);if(m)acc=m[1]}
+  const ph=(other+' '+details).match(/(?:\+?254|0)[71][\d*]{8}/);
+  if(!ref||!dt||!(amt>0))return null;
+  return{ref,date:`${dt.getFullYear()}-${p2(dt.getMonth()+1)}-${p2(dt.getDate())}`,time:`${p2(dt.getHours())}:${p2(dt.getMinutes())}:${p2(dt.getSeconds())}`,amount:amt,phone:ph?ph[0]:'',acc:(/^\d{1,3}$/.test(acc.trim())?acc.trim().padStart(3,'0'):acc.toUpperCase())}}
+function ingest(a){
+  let h=a.findIndex(r=>r.some(c=>/receipt|transaction\s*id|reference/i.test(c)));if(h<0)h=0;
+  const hd=a[h],rows=a.slice(h+1).map(r=>Object.fromEntries(hd.map((k,i)=>[k||('c'+i),r[i]])));
+  const seen=new Set(S.tx.map(t=>t.ref));let add=0,dup=0,skip=0,sum=0;
+  for(const r of rows){const t=rowToTx(r);if(!t){skip++;continue}
+    if(seen.has(t.ref)){dup++;continue}seen.add(t.ref);S.tx.push(t);add++;sum+=t.amount}
+  S.tx.sort((x,y)=>(y.date+y.time).localeCompare(x.date+x.time));save();
+  msg=`Imported ${add} new payment(s) worth KES ${fmt(sum)}. Duplicates ignored: ${dup}. Rows skipped (not payments in): ${skip}.`+unmatchedMsg();render()}
+function unmatchedMsg(){const u=[...new Set(S.tx.filter(t=>!famByAcc(t.acc)&&!S.members.some(m=>m.acc===t.acc)).map(t=>t.acc||'(blank)'))];return u.length?` ${u.length} account number(s) match no unit or member: ${u.slice(0,15).join(', ')}${u.length>15?' …':''}. Check these on the Payments tab.`:' Every payment matched a unit.'}
+async function importFile(f){
+  if(!f)return;
+  if(/\.xls/i.test(f.name)){
+    if(!window.XLSX){msg='Excel files need internet on first use. Open the file in Excel, choose Save As > CSV, and import the CSV.';render();return}
+    const wb=XLSX.read(await f.arrayBuffer(),{type:'array',cellDates:true});
+    ingest(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''}))}
+  else ingest(csv(await f.text()))}
+
+const TH={reg:['#0b6b3a','#084d2a','#e6f3ec'],cas:['#6d3fb0','#4b2784','#efe9f8'],mem:['#0a6c8f','#07496a','#e4f1f6'],imp:['#c2570c','#8f3d05','#fbeee1'],pay:['#1d4ed8','#14338f','#e6edfb'],ana:['#a3185a','#730f40','#f8e7f0'],rem:['#128c7e','#075e54','#e3f5f1'],bak:['#475467','#2b3440','#eceff3']};
+const TL=[['reg','Registration'],['cas','Cases'],['mem','Members'],['imp','Import'],['pay','Payments'],['ana','Analysis'],['rem','Reminders'],['bak','Backup']];
+function theme(){const t=TH[tab]||TH.reg,r=document.documentElement.style;r.setProperty('--ac',t[0]);r.setProperty('--ac2',t[1]);r.setProperty('--soft',t[2])}
+function render(){theme();
+  $('#tabs').innerHTML=TL.map(([k,l])=>`<button class="${tab===k?'on':''}" style="--tc:${TH[k][0]}" onclick="tab='${k}';render()"><span class="ic"></span>${l}</button>`).join('');
+  $('#v').innerHTML=(!S.reg.length&&tab!=='bak'?'<div class="card"><b>No data on this phone yet</b><p>Open the <b>Backup</b> tab and use <b>Restore</b> to load the backup file from the computer.</p><button class="p" onclick="tab=\'bak\';render()">Go to Backup</button></div>':'')+({reg:regv,cas:casv,mem,imp,pay,ana,rem:remv,bak})[tab]();$('#v').style.maxWidth=tab==='reg'?'none':''}
+function filtered(){const s=q.toLowerCase();return S.tx.filter(t=>(!mo||t.date.startsWith(mo))&&(!s||[t.ref,t.phone,t.acc,t.date,memName(t.acc)||''].join(' ').toLowerCase().includes(s)))}
+function table(L){return `<div class="sc"><table><tr><th>Date</th><th>Time</th><th>Reference</th><th>Phone</th><th>Account</th><th>Member</th><th class="r">Amount</th></tr>
+ ${L.map(t=>`<tr><td>${t.date}</td><td>${t.time}</td><td>${esc(t.ref)}</td><td>${esc(t.phone)}</td><td>${esc(t.acc)}</td><td>${esc(memName(t.acc)||'')||'<span class="bad">Unmatched</span>'}</td><td class="r">${fmt(t.amount)}</td></tr>`).join('')||'<tr><td colspan="7" class="mu">No payments.</td></tr>'}</table></div>`}
+function pay(){const L=filtered(),tot=L.reduce((a,t)=>a+t.amount,0);
+ return `<div class="card"><div class="mu">Total shown (${L.length} payments)</div><div class="tot">KES ${fmt(tot)}</div></div>
+ <div class="card"><div class="row noprint"><select onchange="mo=this.value;render()"><option value="">All months</option>${[...new Set(S.tx.map(t=>t.date.slice(0,7)))].sort().reverse().map(k=>`<option value="${k}" ${k==mo?'selected':''}>${MN[+k.slice(5)-1]} ${k.slice(0,4)}</option>`).join('')}</select><input placeholder="Search reference, phone, account, name, date" value="${esc(q)}" oninput="q=this.value;keep()" style="flex:1;min-width:220px"><button onclick="exportCsv(filtered(),'payments')">Export CSV</button><button onclick="print()">Print</button></div>${table(L)}</div>`}
+function keep(){const p=document.activeElement.selectionStart;render();const i=$('input');i.focus();i.setSelectionRange(p,p)}
+function stats(list){const n=list.length,s=list.reduce((a,t)=>a+t.amount,0);
+ const ds=list.map(t=>t.date).sort();return{n,s,avg:n?s/n:0,max:n?Math.max(...list.map(t=>t.amount)):0,first:ds[0]||'-',last:ds[n-1]||'-'}}
+function ana(){return `<div class="row noprint"><button class="${av=='fam'?'on':''}" onclick="av='fam';render()">Cases: family / individual</button><button class="${av=='one'?'on':''}" onclick="av='one';render()">Paybill: one member</button><button class="${av=='all'?'on':''}" onclick="av='all';render()">Paybill: all members</button></div>`+(av=='fam'?fam():av=='one'?one():sum())}
+function one(){
+ const accs=[...new Set([...S.members.map(m=>m.acc),...S.tx.map(t=>t.acc),...groups().filter(g=>g.u).map(g=>g.u)])].sort();
+ if(!sel||!accs.includes(sel))sel=accs[0]||'';
+ const opts=accs.map(a=>`<option value="${esc(a)}" ${a==sel?'selected':''}>${esc(a)} - ${esc(memName(a)||'Unmatched')}</option>`).join('');
+ const L=S.tx.filter(t=>t.acc===sel),st=stats(L),m={};
+ L.forEach(t=>{const k=t.date.slice(0,7);(m[k]=m[k]||{n:0,s:0});m[k].n++;m[k].s+=t.amount});
+ const ys=[...new Set(L.map(t=>t.date.slice(0,4)).concat(String(new Date().getFullYear())))].sort().reverse();
+ if(!ys.includes(yr))yr=ys[0];
+ const ks=MN.map((x,i)=>yr+'-'+p2(i+1));
+ return `<div class="card noprint"><div class="row"><select onchange="sel=this.value;render()">${opts}</select><button class="p" onclick="waAcc()">Send on WhatsApp</button><button onclick="print()">Print statement</button><button onclick="exportCsv(S.tx.filter(t=>t.acc===sel),'member-'+sel)">Export CSV</button></div></div>
+ ${sel?`<div class="ph"><b>FULL GOSPEL CHURCHES OF KENYA<br>MURANG'A TOWN LCA WELFARE GROUP</b></div>
+ <div class="card"><b>${esc(memName(sel)||'Unmatched')}</b> <span class="mu">Account ${esc(sel)}</span></div>
+ <div class="kp"><div>Total contributed<b>KES ${fmt(st.s)}</b></div><div>Payments<b>${st.n}</b></div><div>Average<b>KES ${fmt(st.avg)}</b></div><div>Largest<b>KES ${fmt(st.max)}</b></div><div>First payment<b>${st.first}</b></div><div>Last payment<b>${st.last}</b></div></div>
+ <div class="card sc"><div class="row"><b>By month</b><select class="noprint" onchange="yr=this.value;render()">${ys.map(y=>`<option ${y==yr?'selected':''}>${y}</option>`).join('')}</select></div><table><tr><th>Month</th><th class="r">Payments</th><th class="r">Total (KES)</th></tr>${ks.map(k=>m[k]?`<tr><td>${MN[+k.slice(5)-1]} ${yr}</td><td class="r">${m[k].n}</td><td class="r">${fmt(m[k].s)}</td></tr>`:`<tr><td>${MN[+k.slice(5)-1]} ${yr}</td><td class="r bad" colspan="2">No payment</td></tr>`).join('')}<tr><td><b>Total ${yr}</b></td><td class="r"><b>${ks.reduce((a,k)=>a+(m[k]?m[k].n:0),0)}</b></td><td class="r"><b>${fmt(ks.reduce((a,k)=>a+(m[k]?m[k].s:0),0))}</b></td></tr></table></div>
+ <div class="card"><b>All payments</b>${table(L)}</div>`:'<div class="card mu">Add members first.</div>'}`}
+function sum(){
+ const years=[...new Set(S.tx.map(t=>t.date.slice(0,4)))].sort().reverse();if(!yr||!years.includes(yr))yr=years[0]||'';
+ const accs=[...new Set([...S.members.map(m=>m.acc),...S.tx.map(t=>t.acc)])].sort();
+ const rows=accs.map(a=>{const L=S.tx.filter(t=>t.acc===a),mo=Array(12).fill(0),g=famByAcc(a);
+  L.filter(t=>t.date.startsWith(yr)).forEach(t=>mo[+t.date.slice(5,7)-1]+=t.amount);
+  return{a,id:g?g.r[0].id:0,name:memName(a),n:L.length,all:L.reduce((x,t)=>x+t.amount,0),mo,y:mo.reduce((x,y)=>x+y,0)}});
+ const gt=rows.reduce((x,r)=>x+r.all,0);
+ return `<div class="card"><div class="row noprint"><select onchange="yr=this.value;render()">${years.map(y=>`<option ${y==yr?'selected':''}>${y}</option>`).join('')}</select><button onclick="print()">Print</button></div>
+ <div class="mu">Overall total (all time)</div><div class="tot">KES ${fmt(gt)}</div></div>
+ <div class="card sc"><table><tr><th>Account</th><th>Member</th>${MN.map(x=>`<th class="r">${x}</th>`).join('')}<th class="r">${yr||'Year'}</th><th class="r">All time</th><th class="noprint"></th></tr>
+ ${rows.map(r=>`<tr><td>${esc(r.a)}</td><td>${esc(r.name||'')||'<span class="bad">Unmatched</span>'}</td>${r.mo.map(v=>`<td class="r">${v?fmt(v):'-'}</td>`).join('')}<td class="r"><b>${fmt(r.y)}</b></td><td class="r"><b>${fmt(r.all)}</b></td><td class="noprint">${r.id?`<button class="xs" ${hasWA(r.id)?'':'disabled'} onclick="waFam(${r.id})">WhatsApp</button>`:''}</td></tr>`).join('')||'<tr><td class="mu">Nothing yet.</td></tr>'}</table></div>`}
+function nextAcc(){const a=S.members.map(m=>m.acc),n=a.filter(x=>/^\d+$/.test(x));
+ if(n.length){const w=Math.max(...n.map(x=>x.length));return String(Math.max(...n.map(Number))+1).padStart(w,'0')}return a.length?'':'001'}
+const nu=v=>String(+v||v);
+function unitAcc(){return groups().filter(g=>g.u).map(g=>{const L=S.tx.filter(t=>nu(t.acc)===nu(g.u));return{u:g.u,names:hf(g.r).map(m=>m.n.trim()).join(' & '),fam:g.r.length>1,n:L.length,tot:L.reduce((a,t)=>a+t.amount,0)}})}
+function mem(){const UA=unitAcc(),un=[...new Set(S.tx.map(t=>t.acc).filter(a=>!S.members.some(m=>m.acc===a)&&!UA.some(x=>nu(x.u)===nu(a))))];
+ return `<div class="card sc"><b>Unit accounts (from Registration)</b><div class="mu" style="margin:4px 0 6px">${UA.length} unit(s). A husband and wife share one unit number, which they use as the paybill account number. Add or change families on the Registration tab.</div><table><tr><th>Unit no.</th><th>Husband &amp; Wife / Member</th><th>Type</th><th class="r">Payments</th><th class="r">Total (KES)</th></tr>${UA.map(x=>`<tr><td>${esc(x.u)}</td><td>${esc(x.names)}</td><td>${x.fam?'Family':'Individual'}</td><td class="r">${x.n}</td><td class="r">${fmt(x.tot)}</td></tr>`).join('')}</table></div>
+ <div class="card"><b>Other account numbers</b> <span class="mu">(for example a member who pays with a phone number). The number in front of a name such as "500" was the contribution amount and is not part of the name; it is removed automatically.</span></div>
+ <div class="card"><b>Add member</b><div class="row" style="margin-top:8px"><input id="ma" placeholder="Unique number" value="${esc(nextAcc())}" style="width:150px"><input id="mn" placeholder="Member name" style="flex:1"><button class="p" onclick="addMem()">Add</button></div>
+ <div class="mu">The unique number is what the member types as the account number when paying to the paybill. No two members can share a number.</div></div>
+ ${un.length?`<div class="card"><span class="bad">${un.length} account number(s) in payments have no member:</span> ${un.map(esc).join(', ')||''}</div>`:''}
+ <div class="card"><div class="mu">Or paste many, one per line: number, name</div><textarea id="bulk" rows="4" style="width:100%"></textarea><div class="row" style="margin-top:8px"><button onclick="bulkMem()">Add all</button></div></div>
+ <div class="card sc"><div class="mu" style="margin-bottom:6px">${S.members.length} member(s)</div><table><tr><th>Account no.</th><th>Name</th><th class="r">Payments</th><th class="r">Total (KES)</th><th></th></tr>${[...S.members].map((m,i)=>[m,i]).sort((x,y)=>x[0].acc.localeCompare(y[0].acc,undefined,{numeric:true})).map(([m,i])=>{const L=S.tx.filter(t=>t.acc===m.acc);return `<tr><td>${esc(m.acc)}</td><td>${esc(String(m.name).replace(/^\s*\d{2,5}\s+(?=\D)/,''))}</td><td class="r">${L.length}</td><td class="r">${fmt(L.reduce((a,t)=>a+t.amount,0))}</td><td class="r"><button onclick="editMem(${i})">Rename</button> <button onclick="delMem(${i})">Remove</button></td></tr>`}).join('')||'<tr><td colspan="5" class="mu">No members yet.</td></tr>'}</table></div>`}
+function imp(){return `<div class="card"><p>Upload the paybill statement (.csv or .xlsx). Each M-Pesa receipt number is saved once, so importing the same or an overlapping statement will not double-record.</p>
+ <input type="file" accept=".csv,.xlsx,.xls" onchange="importFile(this.files[0]);this.value=''"><p>${esc(msg)}</p></div>`}
+function bak(){let lb='';try{lb=localStorage.getItem(K+'_bk')||''}catch(e){}
+ return `<div class="card"><b>Backup</b><p class="mu">Last backup: ${lb?esc(lb):'<span class="bad">never</span>'}. Save a backup file regularly, and before moving to another computer.</p>
+ <div class="row"><button class="p" onclick="backup()">Download backup</button></div></div>
+ <div class="card"><b>Restore</b><p class="mu">Replaces everything in the program with the backup file.</p><input type="file" accept=".json" onchange="restore(this.files[0])"></div>
+ <div class="card"><button onclick="if(confirm('Delete ALL payments and members?')){S={members:[],tx:[],reg:S.reg,cases:S.cases};save();msg='';render()}">Clear all data</button></div>`}
+function addMem(){const a=$('#ma').value.trim().toUpperCase(),n=$('#mn').value.trim();if(!a||!n){alert('Enter the unique number and the name.');return}
+ if(S.members.some(m=>m.acc===a)){alert('Number '+a+' already belongs to '+memName(a)+'. Each member needs a unique number.');return}S.members.push({acc:a,name:n});save();render()}
+function bulkMem(){let add=0,dup=[];$('#bulk').value.split('\n').forEach(l=>{const [a,...n]=l.split(/[,\t]/);const acc=(a||'').trim().toUpperCase(),nm=n.join(' ').trim().replace(/^\d{2,5}\s+(?=\D)/,'');
+ if(!acc||!nm)return;if(S.members.some(m=>m.acc===acc)){dup.push(acc);return}S.members.push({acc,name:nm});add++});save();render();
+ alert('Added '+add+' member(s).'+(dup.length?' Skipped (number already used): '+dup.join(', '):''))}
+function editMem(i){const n=prompt('Member name',S.members[i].name);if(n&&n.trim()){S.members[i].name=n.trim();save();render()}}
+function delMem(i){const m=S.members[i],c=S.tx.filter(t=>t.acc===m.acc).length;
+ if(!confirm('Remove '+m.name+' ('+m.acc+')?'+(c?' Their '+c+' payment(s) will stay but show as Unmatched.':'')))return;S.members.splice(i,1);save();render()}
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}
+function exportCsv(L,n){dl(n+'.csv','\uFEFF'+['Date,Time,Reference,Phone,Account,Member,Amount',...L.map(t=>[t.date,t.time,t.ref,t.phone,t.acc,memName(t.acc)||'',t.amount].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','))].join('\r\n'),'text/csv')}
+function backup(){try{localStorage.setItem(K+'_bk',new Date().toLocaleString('en-KE'))}catch(e){}
+ dl(`lca-backup-${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(S),'application/json');render()}
+async function restore(f){if(!f)return;try{const d=JSON.parse(await f.text());if(!d.tx||!d.members)throw 0;
+ if(!confirm('Replace current data with this backup?'))return;S=d;S.reg=S.reg||JSON.parse(JSON.stringify(SEED.reg));S.cases=S.cases||JSON.parse(JSON.stringify(SEED.cases));mig();save();msg='Backup restored.';render()}catch(e){alert('Not a valid backup file.')}}
+S.reg=S.reg||JSON.parse(JSON.stringify(SEED.reg));S.cases=S.cases||JSON.parse(JSON.stringify(SEED.cases));
+let rq='',ed=-1,ci=0,cf='all';
+const RC=['Spouse','Father','Mother','Father-in-law','Mother-in-law'];
+const rate=(c,m)=>+m.f===100?Math.min(100,c.a):c.a;
+/* A payment bigger than the amount for its case (e.g. KES 1,000 when the case is KES 500) is treated as
+   settling an earlier case the family had not paid. The extra goes to the nearest earlier case with a balance. */
+function allocG(g){const h=g.r[0],ids=g.r.map(m=>m.id),C=S.cases,n=C.length;
+ const A=C.map(c=>{const ber=ids.some(i=>c.b.includes(i));const raw=ids.reduce((x,i)=>x+(c.pay[i]||0),0);return{ber,exp:ber?0:rate(c,h),raw,eff:raw,out:[],inn:[]}});
+ for(let j=0;j<n;j++){const a=A[j];if(a.ber)continue;let sur=a.eff-a.exp;if(sur<=0)continue;
+  for(let k=j-1;k>=0&&sur>0;k--){const b=A[k];if(b.ber)continue;const need=b.exp-b.eff;if(need<=0)continue;const t=Math.min(sur,need);
+   b.eff+=t;a.eff-=t;sur-=t;a.out.push({to:C[k].n,amt:t});b.inn.push({from:C[j].n,amt:t})}}
+ return A}
+let AM={};
+function setAM(){AM={};groups().forEach(g=>{const A=allocG(g);g.r.forEach(m=>{AM[m.id]=A})})}
+function st(c,m){const ix=S.cases.indexOf(c),A=(AM[m.id]||[])[ix];
+ if(!A){if(c.b.includes(m.id))return'Bereaved';const a=c.pay[m.id]||0;return a<=0?'Unpaid':a<rate(c,m)?'Part paid':'Paid'}
+ if(A.ber)return'Bereaved';return A.eff<=0?'Unpaid':A.eff<A.exp?'Part paid':'Paid'}
+const noteOf=(A)=>A?[...A.out.map(o=>`KES ${fmt(o.amt)} of this payment went to ${o.to}`),...A.inn.map(o=>`KES ${fmt(o.amt)} received from the ${o.from} payment`)]:[];
+const nm=(m,t)=>`<a class="lk${m.dd?' dn-d':''}" title="Click to see contributions" onclick="stmt(${m.id})">${t&&t.h?t.h:esc(t||m.n)}</a>`;
+let dr=null,drEd=-2;
+const blankL=()=>({ro:'',n:'',p:'',f:500,s:['','','','',''],sd:[0,0,0,0,0],dd:0,dt:''});
+const normU=v=>/^\d+$/.test(v)?v.padStart(3,'0'):v.toUpperCase();
+const FEMN=new Set('esther millicent peris jane lydiah lydia alice selina sarah grace ann anne annah regina mary mercy leah lornah catherine faith teresia teresiah purity monica margaret susan perpetual irene rahab lillian phylis elizabeth pauline juliet penina nancy beatrice lizzy lizzie jacqueline jecinta jacinta loisce loice florah priscah priscilla pouline evalyne ruth joyce dorcas caroline naomi judy lucy emis pamphila martha rosemary mauline bilha virginia cecilia josephine hellen emma ruth dishon mwamlanda wanjiku njeri'.split(' ').filter(x=>!['dishon','mwamlanda','wanjiku','njeri'].includes(x)));
+const isFem=n=>FEMN.has(String(n||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''));
+function mig(){(S.tx||[]).forEach(t=>{if(/^\d{1,3}$/.test(String(t.acc)))t.acc=String(t.acc).padStart(3,'0')});(S.members||[]).forEach(m=>{m.name=String(m.name||'').replace(/^\s*\d{2,5}\s+(?=\D)/,'')});
+ S.reg.forEach(m=>{if(/^\d+$/.test(String(m.u)))m.u=String(m.u).padStart(3,'0');if(!m.sd)m.sd=[0,0,0,0,0];if(m.ro==='Principal'||m.ro==='Member'||m.ro==='Spouse')m.ro=''});
+ const U=unitMap(),by={};U.forEach((u,i)=>{if(u)(by[u]=by[u]||[]).push(i)});
+ Object.values(by).forEach(ix=>{if(ix.length<2)return;const a=S.reg[ix[0]],b=S.reg[ix[1]];
+  if((a.ro==='Husband'||a.ro==='Wife')&&(b.ro==='Husband'||b.ro==='Wife'))return;
+  const fa=isFem(a.n),fb=isFem(b.n);
+  if(fa&&!fb){a.ro='Wife';b.ro='Husband'}else if(fb&&!fa){b.ro='Wife';a.ro='Husband'}else{a.ro='Husband';b.ro='Wife'}})}
+mig();
+function unitMap(){const U=[];let cur='';
+ S.reg.forEach(m=>{if(m.n==='Elderly'){U.push('');return}
+  if(m.u){cur=m.u;U.push(cur)}else if(m.y){cur='';U.push('')}
+  else if(cur&&!/^Registered only/.test(m.t||''))U.push(cur);else U.push('')});return U}
+const hf=r=>[...r].sort((x,y)=>(x.ro==='Wife')-(y.ro==='Wife'));
+function nextUnit(){const n=unitMap().filter(x=>/^\d+$/.test(x)).map(Number);return String((n.length?Math.max(...n):0)+1).padStart(3,'0')}
+function lastUnit(){const U=unitMap().filter(Boolean);return U[U.length-1]||''}
+function initDr(){drEd=ed;
+ if(ed>=0){const m=S.reg[ed];dr={ty:'Edit',u:unitMap()[ed],k:m.k.join(', '),a:{ro:m.ro||'',n:m.n,p:m.p,f:+m.f||0,s:[...m.s],sd:[...(m.sd||[0,0,0,0,0])],dd:m.dd||0,dt:m.dt||''},b:blankL()}}
+ else dr={ty:'Individual',u:'',k:'',a:blankL(),b:blankL()}}
+function capture(){if(!dr)return;const g=id=>document.getElementById(id);
+ ['a','b'].forEach(l=>{if(!g('f_n_'+l))return;const x=dr[l];x.n=g('f_n_'+l).value.trim();const rs=g('f_r_'+l);if(rs)x.ro=rs.value;x.p=g('f_p_'+l).value.trim();const ff=g('f_f_'+l);if(ff)x.f=Math.max(0,+ff.value||0);
+  for(let i=0;i<5;i++){const e=g('f_s'+i+'_'+l);if(e)x.s[i]=e.value.trim();const c=g('f_x'+i+'_'+l);if(c)x.sd[i]=c.checked?1:0}
+  const d=g('f_dd_'+l);if(d)x.dd=d.checked?1:0;const t=g('f_dt_'+l);if(t)x.dt=t.value});
+ if(g('f_k'))dr.k=g('f_k').value.trim();if(g('f_u'))dr.u=g('f_u').value.trim()}
+function setTy(t){capture();dr.ty=t;dr.u='';render()}
+function cancelReg(){ed=-1;dr=null;drEd=-2;render()}
+const kidsH=k=>k&&k.length?`<div class="kc">${k.length} child${k.length>1?'ren':''}</div>`+`<div>`+k.map(c=>`<span class="kch">${esc(c)}</span>`).join('')+`</div>`:'<span class="mu">-</span>';
+function regRows(){const s=rq.toLowerCase(),U=unitMap();
+ const L=S.reg.map((m,i)=>({m,i,u:U[i]})).filter(x=>!s||(s==='unpaid'&&!(+x.m.f>0))||(JSON.stringify(x.m)+' '+x.u+((x.m.dd||(x.m.sd||[]).some(v=>v))?' deceased':'')).toLowerCase().includes(s));
+ let out='',b=0,j=0;
+ while(j<L.length){let e=j+1;if(L[j].u)while(e<L.length&&L[e].u===L[j].u)e++;
+  const B=L.slice(j,e),n=B.length;b++;const ks=B.map(x=>x.m.k.join(', ')),same=ks.every(k=>k===ks[0]);
+  out+=B.map((x,r)=>{const m=x.m,dead=m.dd,i=x.i,cls=(b%2?'fa':'fb')+(r==0?' fs':'')+(dead?' dead':''),ro=n>1?(m.ro||'Spouse'):'Member';
+   const ty=/^Registered only/.test(m.t||'')?'Registered only':n>1?'Family':'Individual';
+   return `<tr class="${cls}">${r==0?`<td class="un" rowspan="${n}">${esc(x.u)||'<span class="mu">-</span>'}</td><td class="ty gb" rowspan="${n}">${ty}</td>`:''}<td class="ro">${esc(ro)}</td>
+   <td class="dn">${dead?'† ':''}${nm(m)}${m.t?` <span class="mu">(${esc(m.t)})</span>`:''}</td><td class="pn">${esc(m.p)}</td><td class="gb r">${+m.f>0?n0(m.f):'<span class="bad">Not paid</span>'}</td>
+   ${m.s.map((v,k)=>`<td class="${k==4?'gb':''}">${v?(m.sd&&m.sd[k]?`<span class="dx" title="Deceased - no longer a beneficiary">† ${esc(v)}</span>`:esc(v)):''}</td>`).join('')}
+   ${(r==0||!same)?`<td class="gb kd" ${same?`rowspan="${n}"`:''}>${kidsH(B[r].m.k)}</td>`:''}
+   <td>${dead?`<span class="chip dead">DECEASED †</span>${m.dt?`<div class="mu">${esc(m.dt)}</div>`:''}`:'<span class="chip Paid">Active</span>'}</td>
+   <td class="noprint"><button class="xs" onclick="editReg(${i})">Edit</button> <button class="xs" onclick="toggleDead(${i})">${dead?'Undo deceased':'Mark deceased'}</button> ${n==1&&!dead&&!/^Registered only/.test(m.t||'')?`<button class="xs" onclick="addPartner(${i})" title="Add a husband or wife to this member">+ Partner</button> `:''}<button class="xs" onclick="delReg(${i})">Remove</button></td></tr>`}).join('');
+  j=e}
+ return `<table class="rg"><thead><tr><th colspan="2" class="gb">FAMILY</th><th colspan="4" class="gb">MEMBER</th><th colspan="5" class="gb">SPOUSE &amp; PARENTS (BENEFICIARIES)</th><th colspan="3">CHILDREN &amp; STATUS</th></tr>
+ <tr><th>Unit</th><th class="gb">Type</th><th>Husband / Wife</th><th>Name</th><th>Phone</th><th class="gb">Reg. fee (KES)</th>${RC.map((x,k)=>`<th class="${k==4?'gb':''}">${x}</th>`).join('')}<th class="gb">Children</th><th>Status</th><th class="noprint"></th></tr></thead>
+ ${out||'<tr><td colspan="14" class="mu">No one found.</td></tr>'}</table>`}
+function regv(){if(!dr||drEd!==ed)initDr();
+ const edit=ed>=0,ty=dr.ty,fam=ty==='Family',isHead=edit&&!!S.reg[ed].u;
+ const auto=ty==='Follower'?lastUnit():nextUnit(),u=dr.u||(edit?'':auto);
+ const hint=edit?(isHead?'Changing this moves the whole family to the new number.':'This person follows the unit above; the number cannot be changed here.')
+  :ty==='Individual'?`Next free unit: ${nextUnit()}.`:fam?`Husband and wife both go under this one unit (next free: ${nextUnit()}).`:`Joins the previous unit (${lastUnit()||'none yet'}). Type another number to add to a different unit.`;
+ const line=(l,title,idx)=>{const x=dr[l],showR=edit||ty==='Follower';
+  return `<div class="ln"><div class="lt">${title}</div><div class="row">${showR?`<select id="f_r_${l}" title="Husband or wife"><option value="">Member (single)</option><option ${x.ro==='Husband'?'selected':''}>Husband</option><option ${x.ro==='Wife'?'selected':''}>Wife</option></select>`:''}<input id="f_n_${l}" placeholder="Full name" value="${esc(x.n)}" style="width:240px"><input id="f_p_${l}" placeholder="Phone" value="${esc(x.p)}" style="width:150px"><label class="dd">Registration fee (KES) <input id="f_f_${l}" type="number" min="0" value="${+x.f||0}" style="width:90px"></label></div>
+  <div class="row">${idx.map(i=>`<span class="rl"><input id="f_s${i}_${l}" placeholder="${RC[i]}" value="${esc(x.s[i])}" style="width:155px"></span>`).join('')}</div></div>`};
+ const U=unitMap(),units=new Set(U.filter(Boolean)).size,dead=S.reg.filter(m=>m.dd).length,bdead=S.reg.reduce((n,m)=>n+(m.sd||[]).filter((v,k)=>v&&m.s[k]).length,0);
+ return `<div class="card"><b>${edit?'Edit member':'Register'}</b>
+ ${edit?'':`<div class="row" style="margin-top:8px">${[['Individual','Individual (takes next unit)'],['Family','Family: husband &amp; wife (share one unit)'],['Follower','Husband / wife joining an existing unit']].map(([k,l])=>`<button class="${ty==k?'on':''}" onclick="setTy('${k}')">${l}</button>`).join('')}</div>`}
+ <div class="row" style="margin-top:8px"><b>Unit no.</b><input id="f_u" value="${esc(u)}" style="width:100px;font-weight:700;font-size:16px" ${edit&&!isHead?'readonly':''}><span class="mu">${hint}</span></div>
+ ${fam?line('a','Line 1: Husband',[1,2,3,4])+line('b','Line 2: Wife',[1,2,3,4]):line('a',edit?'Member':ty==='Follower'?'Follower':'Member',[0,1,2,3,4])}
+ <div class="row" style="margin-top:8px"><input id="f_k" placeholder="Children (comma separated; shared by the family)" value="${esc(dr.k)}" style="flex:1;min-width:260px"><button class="p" onclick="saveReg()">${edit?'Save':fam?'Add family':'Add'}</button>${edit?'<button onclick="cancelReg()">Cancel</button>':''}</div></div>
+ <div class="card"><div class="row noprint"><input placeholder="Search name, phone, unit, beneficiary (type &quot;deceased&quot; to list them)" value="${esc(rq)}" oninput="rq=this.value;$('#rt').innerHTML=regRows()" style="flex:1;min-width:220px"><span class="mu"><b>Registration fees: KES ${n0(S.reg.reduce((a,m)=>a+(+m.f||0),0))}</b> from ${S.reg.filter(m=>+m.f>0).length} of ${S.reg.length} people (type "unpaid" to list the ${S.reg.filter(m=>!(+m.f>0)).length} not paid) · ${S.reg.length} people · ${units} units · <b>${dead}</b> members deceased · <b>${bdead}</b> beneficiaries deceased</span><button onclick="exRegFee()">Export fees</button><button onclick="print()">Print</button></div><div class="sc" id="rt">${regRows()}</div></div>`}
+function exRegFee(){const U=unitMap();dl('registration-fees.csv','\uFEFF'+['Unit,Name,Phone,Registration fee (KES)',...S.reg.map((m,i)=>[U[i]||m.u||'',m.n,m.p,+m.f||0].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')),',TOTAL,,'+S.reg.reduce((a,m)=>a+(+m.f||0),0)].join('\r\n'),'text/csv')}
+function editReg(i){ed=i;initDr();render();scrollTo(0,0)}
+function toggleDead(i){const m=S.reg[i];
+ if(m.dd){if(!confirm('Undo deceased status for '+m.n+'?'))return;m.dd=0;m.dt=''}
+ else{const d=prompt('Mark '+m.n+' as deceased.\nDate of passing (optional, e.g. 2026-10-30):','');if(d===null)return;m.dd=1;m.dt=d.trim()}
+ save();render()}
+function delReg(i){const m=S.reg[i];if(!confirm('Remove '+m.n+' completely?\n\nIf the person has passed on, cancel and use "Mark deceased" instead so the record is kept.'))return;
+ if(m.u){const nx=S.reg[i+1];if(nx&&!nx.u&&!nx.y&&unitMap()[i+1]===m.u){nx.u=m.u;nx.y=1}}
+ S.reg.splice(i,1);cancelReg();save();render()}
+function saveReg(){capture();const ty=dr.ty,a=dr.a,b=dr.b;
+ if(!a.n){alert('Enter the name.');return}
+ if(ty==='Family'&&!b.n){alert("Enter the wife's name on line 2, or choose Individual.");return}
+ const k=dr.k.split(',').map(x=>x.trim()).filter(Boolean),U=unitMap(),nid=()=>Math.max(0,...S.reg.map(x=>x.id))+1;
+ const mk=(x,o)=>({id:0,u:'',n:x.n,p:x.p,f:+x.f||0,w:'',t:'',s:[...x.s],sd:[...x.sd],k:[...k],y:0,dd:x.dd,dt:x.dd?x.dt:'',...o});
+ const u=dr.u?normU(dr.u):(ty==='Follower'?lastUnit():nextUnit());
+ if(ed>=0){const m=S.reg[ed];let nu=m.u;
+  if(m.u){if(!u){alert('Unit number is needed.');return}
+   if(u!==m.u&&S.reg.some((r,i)=>i!==ed&&r.u===u)){alert('Unit '+u+' already belongs to '+S.reg.find((r,i)=>i!==ed&&r.u===u).n+'.');return}nu=u}
+  Object.assign(m,{u:nu,ro:a.ro||'',n:a.n,p:a.p,f:+a.f||0,s:[...a.s],sd:[...a.sd],k,dd:a.dd,dt:a.dd?a.dt:''})}
+ else if(ty==='Follower'){const idx=U.reduce((r,x,i)=>x===u?i:r,-1);if(idx<0){alert('Unit '+u+' does not exist yet.');return}
+  S.reg.splice(idx+1,0,mk(a,{id:nid(),ro:a.ro||'Spouse'}))}
+ else{if(S.reg.some(r=>r.u===u)){alert('Unit '+u+' already belongs to '+S.reg.find(r=>r.u===u).n+'.');return}
+  if(ty==='Individual')S.reg.push(mk(a,{id:nid(),u,y:1,ro:''}));
+  else{const id=nid();a.s[0]=b.n;b.s[0]=a.n;S.reg.push(mk(a,{id,u,y:1,ro:'Husband'}),mk(b,{id:id+1,ro:'Wife'}))}}
+ ed=-1;dr=null;drEd=-2;save();render()}
+
+// ===== Add a partner to a single member =====
+function addPartner(i){const m=S.reg[i],U=unitMap(),u=U[i],cnt={};U.forEach(x=>{if(x)cnt[x]=(cnt[x]||0)+1});
+ const meW=m.ro==='Wife'||(m.ro!=='Husband'&&isFem(m.n));
+ const opts=S.reg.map((x,k)=>({x,k,u:U[k]})).filter(o=>o.k!==i&&o.u&&o.u!==u&&cnt[o.u]===1&&!o.x.dd&&!/^Registered only/.test(o.x.t||'')&&o.x.n!=='Elderly');
+ window.pi=i;
+ const ov=document.createElement('div');ov.className='ov';ov.id='ov';ov.onclick=e=>{if(e.target===ov)closeStmt()};
+ ov.innerHTML=`<div class="md"><h2>Add a partner to ${esc(m.n)}</h2><div class="sub">Joins ${m.u||U[i]?'unit '+esc(U[i]||m.u):'a new unit'} as one family.</div>
+ <div class="card"><div class="row"><b>${esc(m.n)} is the</b><select id="pr_me"><option ${meW?'':'selected'}>Husband</option><option ${meW?'selected':''}>Wife</option></select><span class="mu">(partner is set to the other one)</span></div></div>
+ <div class="card"><div class="row"><label class="dd"><input type="radio" name="pm" value="ex" onchange="pmSw()" ${opts.length?'checked':'disabled'}> Partner is already a registered member</label></div>
+ <div id="pm_ex" style="display:${opts.length?'block':'none'}"><select id="pr_ex" style="width:100%">${opts.map(o=>`<option value="${o.x.id}">${esc(o.x.n)} (unit ${esc(o.u)})</option>`).join('')}</select><div class="mu" style="margin-top:6px">Only members who are single are listed. Their own unit number is released and they move into this family.</div></div></div>
+ <div class="card"><div class="row"><label class="dd"><input type="radio" name="pm" value="new" onchange="pmSw()" ${opts.length?'':'checked'}> Partner is from outside (new person)</label></div>
+ <div id="pm_new" style="display:${opts.length?'none':'block'}"><div class="row"><input id="pr_n" placeholder="Full name" style="width:240px"><input id="pr_p" placeholder="Phone (optional)" style="width:160px"></div></div></div>
+ <div class="row" style="justify-content:flex-end"><button onclick="closeStmt()">Cancel</button><button class="p" onclick="savePartner()">Add partner</button></div></div>`;
+ document.body.appendChild(ov);document.body.style.overflow='hidden';ov.scrollTop=0}
+function pmSw(){const v=document.querySelector('input[name=pm]:checked').value;$('#pm_ex').style.display=v==='ex'?'block':'none';$('#pm_new').style.display=v==='new'?'block':'none'}
+function savePartner(){const m=S.reg[window.pi],mode=document.querySelector('input[name=pm]:checked').value;
+ const me=$('#pr_me').value,pr=me==='Husband'?'Wife':'Husband',mid=m.id;let P;
+ if(mode==='ex'){const id=+$('#pr_ex').value,k=S.reg.findIndex(x=>x.id===id);if(k<0){alert('Choose a member.');return}
+  P=S.reg.splice(k,1)[0];P.u='';P.y=0;P.ro=pr;
+  const kids=[...new Set([...(m.k||[]),...(P.k||[])])];m.k=[...kids];P.k=[...kids]}
+ else{const n=$('#pr_n').value.trim();if(!n){alert('Enter the partner\'s name.');return}
+  P={id:Math.max(0,...S.reg.map(x=>x.id))+1,u:'',n,p:$('#pr_p').value.trim(),f:500,w:'',t:'',s:['','','','',''],sd:[0,0,0,0,0],k:[...(m.k||[])],y:0,ro:pr,dd:0,dt:''}}
+ const mi=S.reg.findIndex(x=>x.id===mid),mm=S.reg[mi];
+ if(!mm.u)mm.u=nextUnit();
+ mm.ro=me;mm.y=1;mm.s[0]=P.n;P.s[0]=mm.n;
+ S.reg.splice(mi+1,0,P);
+ closeStmt();save();render()}
+function casv(){setAM();const c=S.cases[ci];if(!c)return`<div class="card">No cases yet.</div>`+caseForm();
+ const P=S.reg.filter(m=>m.y),R=P.map(m=>[m,st(c,m)]),n=k=>R.filter(x=>x[1]==k).length,tot=Object.values(c.pay).reduce((a,x)=>a+x,0);
+ const L=R.filter(x=>cf=='all'||x[1]==cf||(cf=='Unpaid'&&x[1]=='Part paid'));
+ return `<div class="row noprint">${S.cases.map((x,i)=>`<button class="${i==ci?'on':''}" onclick="ci=${i};render()">${esc(x.n)}</button>`).join('')}</div>
+ <div class="card noprint"><b>Paybill payments</b><div class="row" style="margin-top:8px"><label class="dd">Date of case <input type="date" value="${esc(c.d)}" onchange="setCD(this.value)"></label><button class="p" onclick="syncCase()">Fill from paybill (by unit no.)</button></div><div class="mu">Payments with a unit number as the paybill account number are credited to that family, from the case date up to the date of the next case. Husband and wife share one unit, so it does not matter which of them paid. A payment bigger than the case amount clears an earlier unpaid case automatically.</div>${cm?`<p>${esc(cm)}</p>`:''}</div>
+ <div class="kp"><div>Collected<b>KES ${fmt(tot)}</b></div><div>Paid<b>${n('Paid')}</b></div><div>Part paid<b>${n('Part paid')}</b></div><div>Not paid<b class="bad">${n('Unpaid')}</b></div><div>Bereaved<b>${n('Bereaved')}</b></div><div>Standard amount<b>KES ${fmt(c.a)}</b></div></div>
+ <div class="card"><div class="row noprint"><select onchange="cf=this.value;render()">${[['all','Everyone'],['Paid','Paid'],['Unpaid','Not paid / part paid']].map(([v,l])=>`<option value="${v}" ${v==cf?'selected':''}>${l}</option>`).join('')}</select><span class="noprint" style="display:inline-flex;gap:6px;align-items:center"><input id="bu" placeholder="Bereaved unit no." style="width:165px"><button onclick="markB()">Mark family bereaved</button></span><button onclick="exCase()">Export CSV</button><button onclick="print()">Print</button><button onclick="delCase()">Delete case</button></div>
+ <div class="sc"><table><tr><th>Unit</th><th>Member</th><th>Phone</th><th class="r">Expected</th><th class="r">Paid (KES)</th><th>Status</th><th></th></tr>${L.map(([m,s])=>`<tr><td>${esc(m.u)}</td><td>${nm(m)}</td><td>${esc(m.p)}</td><td class="r">${fmt(rate(c,m))}</td><td class="r"><input type="number" value="${c.pay[m.id]||''}" style="width:90px;text-align:right" onchange="setPay(${m.id},this.value)"></td><td class="stt ${s=='Unpaid'?'bad':''}">${s}${noteOf((AM[m.id]||[])[ci]).map(t=>`<div class="mu" style="text-transform:none;letter-spacing:0;font-weight:400">${esc(t)}</div>`).join('')}</td><td>${s=='Bereaved'?`<button class="noprint" onclick="toggleB(${m.id})">Undo bereaved</button>`:''}</td></tr>`).join('')}</table></div>
+ <p class="mu noprint">Bank statement (PDF) import to fill these amounts will be added next. Until then, type amounts in the Paid column.</p></div>`+caseForm()}
+function caseForm(){return `<div class="card noprint"><b>Add case</b><div class="row" style="margin-top:8px"><input id="c_n" placeholder="e.g. Mr Kamau's Mother" style="width:240px"><input id="c_d" type="date"><input id="c_a" type="number" value="500" style="width:90px"><button class="p" onclick="addCase()">Add case</button></div></div>`}
+function setPay(id,v){const c=S.cases[ci];v=+v;if(v>0)c.pay[id]=v;else delete c.pay[id];save();render()}
+function markB(){const u=($('#bu').value||'').trim().replace(/^0+/,''),U=unitMap(),c=S.cases[ci];
+ if(!u){alert('Type the unit number of the bereaved family.');return}
+ const i=S.reg.findIndex((m,k)=>m.y&&String(U[k]).replace(/^0+/,'')===u);
+ if(i<0){alert('Unit '+u+' not found.');return}
+ const m=S.reg[i];if(c.b.includes(m.id)){alert(m.n+' (unit '+u+') is already marked bereaved.');return}
+ c.b.push(m.id);save();render()}
+function toggleB(id){const c=S.cases[ci],i=c.b.indexOf(id);i<0?c.b.push(id):c.b.splice(i,1);save();render()}
+function addCase(){const n=$('#c_n').value.trim();if(!n){alert('Enter the case name.');return}S.cases.push({id:Math.max(0,...S.cases.map(x=>x.id))+1,n,d:$('#c_d').value,a:+$('#c_a').value||500,b:[],pay:{}});ci=S.cases.length-1;save();render()}
+function delCase(){if(confirm('Delete case '+S.cases[ci].n+' and its payments?')){S.cases.splice(ci,1);ci=0;save();render()}}
+function exCase(){setAM();const c=S.cases[ci];dl('case-'+c.n.replace(/\W+/g,'-')+'.csv','\uFEFFUnit,Member,Phone,Expected,Paid,Status\r\n'+S.reg.filter(m=>m.y).map(m=>[m.u,m.n,m.p,rate(c,m),c.pay[m.id]||0,st(c,m)].map(v=>`"${v}"`).join(',')).join('\r\n'),'text/csv')}
+let cm='';
+function setCD(v){S.cases[ci].d=v;cm='';save();render()}
+function syncCase(){const c=S.cases[ci];if(!c.d){alert('Set the date of this case first, so the program knows which payments belong to it.');return}
+ const nx=S.cases.slice(ci+1).map(x=>x.d).filter(d=>d&&d>c.d).sort()[0]||'9999-12-31',G=groups(),by={},lost={};let seen=0;
+ S.tx.filter(t=>t.date>=c.d&&t.date<nx).forEach(t=>{seen++;const k=nu(t.acc),g=G.find(g=>g.u&&nu(g.u)===k);if(!g){lost[t.acc||'(blank)']=1;return}by[g.r[0].id]=(by[g.r[0].id]||0)+t.amount});
+ const n=Object.keys(by).length;
+ if(!n){cm=seen?'Payments were found in this period but none matched a unit number.':'No paybill payments found from '+c.d+(nx<'9999'?' to '+nx:'')+'. Import the statement first.';render();return}
+ if(!confirm(n+' family(ies) will be credited for "'+c.n+'" from '+seen+' paybill payment(s). Amounts already typed for these families in this case will be replaced. Continue?'))return;
+ Object.entries(by).forEach(([id,a])=>{c.pay[id]=a});save();
+ const l=Object.keys(lost);cm='Credited '+n+' family(ies) from '+seen+' payment(s).'+(l.length?' Account numbers matching no unit: '+l.join(', ')+'.':'');render()}
+let fq='',ft='all';
+function groups(){const G=[],by={};let cur=null;
+ S.reg.forEach(m=>{if(m.n==='Elderly')return;
+  if(m.u){const k='u'+m.u;if(by[k])by[k].r.push(m);else{cur=by[k]={u:m.u,r:[m]};G.push(cur)}}
+  else if(m.y){G.push({u:'',r:[m]});cur=null}
+  else if(cur&&!/^Registered only/.test(m.t||''))cur.r.push(m)});
+ return G}
+function famData(){return groups().map(g=>{const h=g.r[0],ids=g.r.map(m=>m.id);
+ const AL=allocG(g),cs=AL.map(x=>x.ber?{s:'B',a:0,r:0}:{s:x.eff>0?'P':'N',a:x.eff,r:x.exp});
+ return{id:h.id,u:g.u,name:hf(g.r).map(m=>m.n.trim()).join(' & '),nh:hf(g.r).map(m=>m.dd?`<span class="dn-d">† ${esc(m.n.trim())}</span>`:esc(m.n.trim())).join(' &amp; '),F:g.r.length>1,cs,tot:cs.reduce((x,y)=>x+y.a,0),paid:cs.filter(x=>x.s=='P').length,due:cs.filter(x=>x.s!='B').length,out:cs.reduce((x,y)=>x+Math.max(0,y.r-y.a),0)}})}
+function famRows(){const s=fq.toLowerCase(),D=famData().filter(d=>(ft=='all'||(ft=='O'?d.out>0:(ft=='F')==d.F))&&(!s||(d.u+' '+d.name).toLowerCase().includes(s)));
+ return`<table><tr><th>Unit</th><th>Member(s)</th><th>Type</th>${S.cases.map(c=>`<th class="r">${esc(c.n)}</th>`).join('')}<th class="r">Cases paid</th><th class="r">Total</th><th class="r">Outstanding</th><th class="noprint"></th></tr>${D.map(d=>`<tr><td>${esc(d.u)}</td><td>${nm({id:d.id},{h:d.nh})}</td><td>${d.F?'Family':'Individual'}</td>${d.cs.map(x=>x.s=='B'?'<td class="r mu">Bereaved</td>':x.a>0?`<td class="r">${fmt(x.a)}</td>`:'<td class="r bad">Not paid</td>').join('')}<td class="r">${d.paid} / ${d.due}</td><td class="r"><b>${fmt(d.tot)}</b></td><td class="r ${d.out?'bad':''}">${d.out?fmt(d.out):'-'}</td><td class="noprint"><button class="xs ${d.out?'p':''}" ${hasWA(d.id)?'':'disabled'} onclick="waFam(${d.id})">${d.out?'Remind':'Send'}</button></td></tr>`).join('')}<tr><td></td><td><b>Total (${D.length})</b></td><td></td>${S.cases.map((c,i)=>`<td class="r"><b>${fmt(D.reduce((a,d)=>a+d.cs[i].a,0))}</b></td>`).join('')}<td></td><td class="r"><b>${fmt(D.reduce((a,d)=>a+d.tot,0))}</b></td><td class="r"><b>${fmt(D.reduce((a,d)=>a+d.out,0))}</b></td><td class="noprint"></td></tr></table>`}
+function fam(){const A=famData(),f=A.filter(d=>d.F),i=A.filter(d=>!d.F),sm=L=>L.reduce((a,d)=>a+d.tot,0);
+ return`<div class="kp"><div>Families (couples as one)<b>${f.length}</b>KES ${fmt(sm(f))}</div><div>Individuals<b>${i.length}</b>KES ${fmt(sm(i))}</div><div>Total collected<b>KES ${fmt(sm(A))}</b></div><div>Outstanding<b class="bad">KES ${fmt(A.reduce((a,d)=>a+d.out,0))}</b></div></div>
+ <div class="card"><div class="row noprint"><select onchange="ft=this.value;$('#fr').innerHTML=famRows()">${[['all','Families and individuals'],['F','Families only'],['I','Individuals only'],['O','Owing only']].map(([v,l])=>`<option value="${v}" ${v==ft?'selected':''}>${l}</option>`).join('')}</select><input placeholder="Search name or unit" value="${esc(fq)}" oninput="fq=this.value;$('#fr').innerHTML=famRows()" style="flex:1;min-width:200px"><button onclick="exFam()">Export CSV</button><button onclick="print()">Print</button></div><div class="sc" id="fr">${famRows()}</div><p class="mu">A husband and wife on the same unit are counted as one family; a member with no spouse on the list is an individual.</p></div>`}
+function exFam(){dl('families.csv','\uFEFF'+['Unit,Member(s),Type,'+S.cases.map(c=>c.n).join(',')+',Total,Outstanding',...famData().map(d=>[d.u,d.name,d.F?'Family':'Individual',...d.cs.map(x=>x.s=='B'?'Bereaved':x.a),d.tot,d.out].map(v=>`"${v}"`).join(','))].join('\r\n'),'text/csv')}
+// ===== Member statement =====
+function grpOf(id){const m=S.reg.find(x=>x.id===id);if(!m)return null;
+ return groups().find(g=>g.r.some(x=>x.id===id))||{u:m.u,r:[m]}}
+function sdata(id){const g=grpOf(id);if(!g)return null;const h=g.r[0],ids=g.r.map(m=>m.id);
+ const AL=allocG(g),rows=S.cases.map((c,ix)=>{const a=AL[ix],ber=a.ber,paid=a.eff,exp=a.exp;
+  const s=ber?'Bereaved':paid<=0?'Unpaid':paid<exp?'Part':'Paid';
+  return{n:c.n,d:c.d,s,paid,exp:ber?0:exp,bal:ber?0:Math.max(0,exp-paid),extra:ber?0:Math.max(0,paid-exp),note:noteOf(a)}});
+ const due=rows.filter(r=>r.s!='Bereaved'),tot=rows.reduce((a,r)=>a+r.paid,0),out=rows.reduce((a,r)=>a+r.bal,0);
+ const un=g.u?String(+g.u||g.u):'';
+ const tx=g.u?S.tx.filter(t=>String(+t.acc||t.acc)===un):[];
+ return{g,h,names:hf(g.r).map(m=>m.n.trim()),rows,tot,out,cnt:due.filter(r=>r.s=='Paid'||r.s=='Part'||r.paid>0).length,due:due.length,fam:g.r.length>1,tx}}
+const today=()=>new Date().toLocaleDateString('en-KE',{day:'numeric',month:'long',year:'numeric'});
+const LBL={Paid:'Paid',Part:'Part paid',Unpaid:'Not paid',Bereaved:'Bereaved (exempt)'};
+function profile(d){const R=hf(d.g.r),many=R.length>1,kids=[...new Set(R.flatMap(m=>m.k||[]))];
+ const one=m=>{const ben=RC.map((l,k)=>m.s[k]?`<tr><td class="mu">${l}</td><td>${m.sd&&m.sd[k]?`<span class="dx" title="Deceased - no longer a beneficiary">† ${esc(m.s[k])}</span> <span class="mu">(deceased)</span>`:esc(m.s[k])}</td></tr>`:'').join('');
+  return `<div class="card"><div class="row" style="justify-content:space-between;margin-bottom:4px"><b class="${m.dd?'dn-d':''}">${m.dd?'† ':''}${esc(m.n)}</b><span>${m.dd?`<span class="chip dead">DECEASED †</span>`:'<span class="chip Paid">Active</span>'} <button class="xs noprint" onclick="closeStmt();tab='reg';editReg(${S.reg.indexOf(m)})">Edit</button></span></div>
+  <table><tr><td class="mu">Role</td><td>${many?esc(m.ro||'Spouse'):'Member'}</td></tr>
+  <tr><td class="mu">Unit no.</td><td>${esc(d.g.u)||'-'}</td></tr>
+  <tr><td class="mu">Phone</td><td>${esc(m.p)||'-'}</td></tr>
+  ${m.dd&&m.dt?`<tr><td class="mu">Date of passing</td><td>${esc(m.dt)}</td></tr>`:''}
+  ${+m.f===100?'<tr><td class="mu">Rate</td><td>Reduced rate (KES 100)</td></tr>':''}
+  ${m.t?`<tr><td class="mu">Note</td><td>${esc(m.t)}</td></tr>`:''}
+  ${ben||'<tr><td class="mu">Spouse &amp; parents</td><td class="mu">None listed</td></tr>'}</table></div>`};
+ return R.map(one).join('')+`<div class="card"><b>Children</b>${kids.length?`<div style="margin-top:4px">${kids.map(esc).join('<br>')}</div>`:'<div class="mu">None listed</div>'}</div>`}
+function stmt(id){const d=sdata(id);if(!d)return;window.sid=id;
+ const who=d.names.join(' & '),late=d.rows.filter(r=>r.bal>0);
+ const big=d.out>0?`<div class="big no">Not yet up to date<small>${late.length} case(s) with a balance: KES ${fmt(d.out)} outstanding</small></div>`
+  :`<div class="big ok">Up to date<small>Thank you for standing with the family in every case so far.</small></div>`;
+ const o=document.createElement('div');o.className='ov';o.id='ov';o.onclick=e=>{if(e.target===o)closeStmt()};
+ o.innerHTML=`<div class="md"><div class="ph"><b>FULL GOSPEL CHURCHES OF KENYA<br>MURANG'A TOWN LCA WELFARE GROUP</b></div>
+ <div class="row noprint" style="justify-content:flex-end"><button class="p" onclick="stmtWA()">Send on WhatsApp</button><button onclick="stmtCopy()">Copy for WhatsApp</button><button onclick="print()">Print</button><button onclick="closeStmt()">Close</button></div>
+ <h2>${d.g.r.length?hf(d.g.r).map(m=>m.dd?`<span class="dn-d">† ${esc(m.n.trim())}</span>`:esc(m.n.trim())).join(' &amp; '):esc(who)}</h2><div class="sub">${d.g.u?'Unit '+esc(d.g.u)+' · ':''}${d.fam?'Family (couple counted as one)':'Individual'}${d.h.p?' · '+esc(d.h.p):''} · Statement as at ${today()}</div>
+ ${profile(d)}
+ ${big}
+ <div class="kp"><div>Total contributed<b>KES ${fmt(d.tot)}</b></div><div>Cases contributed to<b>${d.cnt} of ${d.due}</b></div><div>Outstanding<b class="${d.out?'bad':''}">KES ${fmt(d.out)}</b></div></div>
+ <div class="card sc"><b>Contributions per case</b><table style="margin-top:6px"><tr><th>Case</th><th class="r">Expected</th><th class="r">Paid</th><th class="r">Balance</th><th>Status</th></tr>
+ ${d.rows.map(r=>`<tr><td>${esc(r.n)}${r.d?` <span class="mu">${esc(r.d)}</span>`:''}${r.note.length?`<div class="mu">${r.note.map(esc).join('; ')}</div>`:''}</td><td class="r">${r.s=='Bereaved'?'-':fmt(r.exp)}</td><td class="r">${r.paid?fmt(r.paid):'-'}</td><td class="r ${r.bal?'bad':''}">${r.bal?fmt(r.bal):r.extra?'+'+fmt(r.extra)+' extra':'-'}</td><td><span class="chip ${r.s}">${LBL[r.s]}</span></td></tr>`).join('')||'<tr><td colspan="5" class="mu">No cases yet.</td></tr>'}
+ <tr><td><b>Total</b></td><td class="r"><b>${fmt(d.rows.reduce((a,r)=>a+r.exp,0))}</b></td><td class="r"><b>${fmt(d.tot)}</b></td><td class="r ${d.out?'bad':''}"><b>${d.out?fmt(d.out):'-'}</b></td><td></td></tr></table></div>
+ ${d.tx.length?`<div class="card sc"><b>Paybill payments (account ${esc(d.g.u)})</b><table style="margin-top:6px"><tr><th>Date</th><th>Reference</th><th class="r">Amount</th></tr>${d.tx.map(t=>`<tr><td>${t.date}</td><td>${esc(t.ref)}</td><td class="r">${fmt(t.amount)}</td></tr>`).join('')}</table></div>`:''}
+ <p class="mu">Expected amount is the standard amount for each case (KES 100 for members on the reduced rate). Bereaved families are exempt from the case. Contact the welfare treasurer if anything here looks wrong.</p></div>`;
+ document.body.appendChild(o);document.body.classList.add('pm');document.body.style.overflow='hidden';o.scrollTop=0}
+function closeStmt(){const o=$('#ov');if(o)o.remove();document.body.classList.remove('pm');document.body.style.overflow=''}
+document.addEventListener('keydown',e=>{if(e.key=='Escape')closeStmt()});
+function stmtText(id){const d=sdata(id||window.sid);if(!d)return'';
+ const L=['*FGCK Murang\'a Town LCA Welfare Group*','Contribution statement for *'+d.names.join(' & ')+'*'+(d.g.u?' (Unit '+d.g.u+')':''),'As at '+today(),''];
+ d.rows.forEach(r=>L.push((r.s=='Paid'?'✅ ':r.s=='Part'?'⚠️ ':r.s=='Bereaved'?'🕊️ ':'❌ ')+r.n+': '+(r.s=='Bereaved'?'bereaved (exempt)':r.s=='Unpaid'?'NOT PAID (KES '+fmt(r.exp)+' due)':'KES '+fmt(r.paid)+(r.bal?' – balance KES '+fmt(r.bal):''))+(r.note.length?' ('+r.note.join('; ')+')':'')));
+ L.push('','Total contributed: KES '+fmt(d.tot));
+ L.push(d.out>0?'Outstanding: *KES '+fmt(d.out)+'* – kindly clear when able. Thank you.':'You are up to date. God bless you for standing with us. 🙏');return L.join('\n')}
+async function stmtCopy(){const t=stmtText();try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(_){}a.remove()}
+ alert('Copied. Open WhatsApp and paste to send to the member or the group.')}
+
+// ===== WhatsApp reminders =====
+const RTPL="Hello {name}, greetings from FGCK Murang'a Town LCA Welfare Group. 🙏\n\nOur records show an outstanding welfare contribution of *KES {amount}*:\n{cases}\n\nKindly pay via Paybill {paybill}, Account No. *{unit}*.\nIf you have already paid, please ignore this message or reply and we will check. Thank you, God bless you.";
+let rcase='',rq2='';
+const n0=n=>Number(n).toLocaleString('en-KE',{maximumFractionDigits:0});
+function waNum(p){const d=String(p||'').replace(/\D/g,'');if(/^254[17]\d{8}$/.test(d))return d;if(/^0[17]\d{8}$/.test(d))return'254'+d.slice(1);if(/^[17]\d{8}$/.test(d))return'254'+d;return''}
+function remList(){return groups().map(g=>{
+  const act=hf(g.r).filter(m=>!m.dd);if(!act.length)return null;
+  const h=g.r[0],d=sdata(h.id);if(!d)return null;
+  const rows=d.rows.map((r,i)=>({...r,i})).filter(r=>r.bal>0&&(rcase===''||String(r.i)===rcase));
+  if(!rows.length)return null;
+  const raw=act.map(m=>String(m.p||'').trim()).filter(Boolean);
+  return{key:g.u?'u'+g.u:'i'+h.id,u:g.u,h,rows,amt:rows.reduce((a,r)=>a+r.bal,0),
+   names:act.map(m=>m.n.trim()).join(' & '),first:act.map(m=>m.n.trim().split(/\s+/)[0]).join(' & '),
+   ph:act.map(m=>waNum(m.p)).find(Boolean)||'',raw:raw[0]||''}}).filter(Boolean)}
+function hasWA(id){const g=grpOf(id);return !!g&&hf(g.r).some(m=>!m.dd&&waNum(m.p))}
+function waFam(id){const sv=rcase;rcase='';const x=remList().find(y=>y.h.id===id);rcase=sv;let ph,txt;
+ if(x){ph=x.ph;txt=remMsg(x)}else{const g=grpOf(id);if(!g)return;ph=hf(g.r).filter(m=>!m.dd).map(m=>waNum(m.p)).find(Boolean)||'';txt=stmtText(id)}
+ if(!ph){alert('No valid phone number for this member. Add it on the Registration tab (Edit).');return}
+ window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(txt),'_blank');
+ if(x){S.rsent=S.rsent||{};S.rsent[x.key]={d:new Date().toISOString(),a:x.amt};save()}}
+function waAcc(){const g=famByAcc(sel);if(g)return waFam(g.r[0].id);
+ const L=S.tx.filter(t=>t.acc===sel),p=L.map(t=>waNum(t.phone)).find(Boolean);
+ if(!p){alert('No phone number is known for this account.');return}
+ const st=stats(L);window.open('https://wa.me/'+p+'?text='+encodeURIComponent("Hello "+(memName(sel)||'member')+", greetings from FGCK Murang'a Town LCA Welfare Group. 🙏 Our records show "+st.n+" contribution(s) from you totalling KES "+n0(st.s)+", the last on "+st.last+". Thank you, God bless you."),'_blank')}
+function remMsg(x){return(S.rtpl||RTPL).replace(/\{name\}/g,()=>x.first).replace(/\{amount\}/g,()=>n0(x.amt))
+  .replace(/\{cases\}/g,()=>x.rows.map(r=>'• '+r.n+': KES '+n0(r.bal)).join('\n'))
+  .replace(/\{paybill\}/g,()=>S.rpb||'[Paybill no.]').replace(/\{unit\}/g,()=>x.u||'your unit number')}
+function keepScroll(f){const m=document.querySelector('main'),t=m.scrollTop;f();m.scrollTop=t}
+function openWA(key){const x=remList().find(y=>y.key===key);if(!x||!x.ph)return;
+  window.open('https://wa.me/'+x.ph+'?text='+encodeURIComponent(remMsg(x)),'_blank');
+  S.rsent=S.rsent||{};S.rsent[key]={d:new Date().toISOString(),a:x.amt};save();keepScroll(render)}
+function nextWA(){const x=remList().find(y=>y.ph&&!(S.rsent&&S.rsent[y.key]));if(!x){alert('Everyone with a valid number has already been reminded.');return}openWA(x.key)}
+async function copyText(t){try{await navigator.clipboard.writeText(t)}catch(e){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(_){}a.remove()}}
+async function copyWA(key){const x=remList().find(y=>y.key===key);if(!x)return;await copyText(remMsg(x));alert('Message copied. Paste it into WhatsApp.')}
+function clearSent(){if(confirm('Clear all "reminded" marks?')){S.rsent={};save();render()}}
+function stmtWA(){const d=sdata(window.sid);if(!d)return;const ph=hf(d.g.r).filter(m=>!m.dd).map(m=>waNum(m.p)).find(Boolean);
+  if(!ph){alert('This member has no valid phone number on the Registration tab. Use "Copy for WhatsApp" instead.');return}
+  window.open('https://wa.me/'+ph+'?text='+encodeURIComponent(stmtText()),'_blank')}
+function remv(){const L0=remList(),s=rq2.toLowerCase(),R=S.rsent||{};
+ const L=L0.filter(x=>!s||(x.u+' '+x.names).toLowerCase().includes(s));
+ const nonum=L0.filter(x=>!x.ph).length,tot=L0.reduce((a,x)=>a+x.amt,0),done=L0.filter(x=>R[x.key]).length,ex=L0.find(x=>x.ph)||L0[0];
+ const dt=iso=>new Date(iso).toLocaleDateString('en-KE',{day:'numeric',month:'short'});
+ return `<div class="kp"><div>Members owing<b>${L0.length}</b></div><div>Total outstanding<b class="bad">KES ${n0(tot)}</b></div><div>Reminded so far<b>${done} / ${L0.length}</b></div><div>No valid number<b class="${nonum?'bad':''}">${nonum}</b></div></div>
+ <div class="card"><b>Message</b>
+  <div class="mu" style="margin:6px 0">You can use {name} {amount} {cases} {unit} {paybill}. Each person only receives their own balance, so nobody's account is shown to the group.</div>
+  <div class="row"><label class="dd">Paybill number <input value="${esc(S.rpb||'')}" placeholder="e.g. 123456" style="width:140px" onchange="S.rpb=this.value.trim();save();render()"></label>
+  <label class="dd">Remind about <select onchange="rcase=this.value;render()"><option value="">All outstanding cases</option>${S.cases.map((c,i)=>`<option value="${i}" ${String(i)===rcase?'selected':''}>${esc(c.n)}</option>`).join('')}</select></label></div>
+  ${S.rpb?'':'<div class="bad" style="margin-bottom:6px">Enter your paybill number so it appears in the message.</div>'}
+  <textarea rows="7" style="width:100%" onchange="S.rtpl=this.value;save();render()">${esc(S.rtpl||RTPL)}</textarea>
+  <div class="row" style="margin-top:6px"><button class="xs" onclick="S.rtpl='';save();render()">Reset message</button></div>
+  ${ex?`<div class="mu" style="margin-top:8px">Preview (${esc(ex.names)}):</div><pre style="white-space:pre-wrap;background:var(--soft);border-radius:8px;padding:10px;margin:4px 0 0;font:inherit">${esc(remMsg(ex))}</pre>`:''}</div>
+ <div class="card"><div class="row noprint"><button class="p" onclick="nextWA()">Open WhatsApp for next member →</button><input placeholder="Search name or unit" value="${esc(rq2)}" oninput="rq2=this.value;keepScroll(()=>{const p=document.activeElement.selectionStart;render();const i=document.querySelector('main input[placeholder^=Search]');i.focus();i.setSelectionRange(p,p)})" style="flex:1;min-width:180px"><button onclick="clearSent()">Clear reminded marks</button></div>
+ <div class="mu" style="margin-bottom:8px">WhatsApp opens with the message already typed. You only press Send. The member is then marked as reminded.</div>
+ <div class="sc"><table><tr><th>Unit</th><th>Member(s)</th><th>Phone</th><th>Owing</th><th class="r">Amount</th><th>Reminded</th><th class="noprint"></th></tr>
+ ${L.map(x=>`<tr><td>${esc(x.u)}</td><td>${nm({id:x.h.id},{h:esc(x.names)})}</td><td>${x.ph?esc(x.raw):x.raw?`<span class="bad">${esc(x.raw)} (invalid)</span>`:'<span class="bad">none</span>'}</td><td class="mu">${x.rows.map(r=>esc(r.n)).join(', ')}</td><td class="r"><b>${n0(x.amt)}</b></td><td>${R[x.key]?'✔ '+dt(R[x.key].d)+(R[x.key].a!==x.amt?' <span class="mu">(balance has changed)</span>':''):'<span class="mu">-</span>'}</td><td class="noprint"><button class="p xs" ${x.ph?'':'disabled'} onclick="openWA('${x.key}')">${R[x.key]?'Send again':'WhatsApp'}</button> <button class="xs" onclick="copyWA('${x.key}')">Copy</button></td></tr>`).join('')||'<tr><td colspan="7" class="mu">Nobody owes anything for this selection.</td></tr>'}</table></div>
+ ${nonum?`<p class="mu">${nonum} member(s) have a missing or invalid number. Fix them on the Registration tab (Edit) and they will appear here ready to send.</p>`:''}</div>`}
+
+render();
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
