@@ -160,8 +160,8 @@ table.rg .xs{padding:2px 8px;font-size:12.5px}
 <header><div class="logo">LCA</div><div class="t"><b>FULL GOSPEL CHURCHES OF KENYA</b><b>MURANG'A TOWN LCA WELFARE GROUP</b><span>Registration, Cases &amp; Contributions (Paybill)</span></div></header>
 <div class="tabbar"><div class="tabs" id="tabs"></div></div>
 <main><div id="v"></div></main>
-<style>#lk{position:fixed;inset:0;background:#e6f3ec;display:flex;align-items:center;justify-content:center;padding:20px;z-index:99;font-family:system-ui,sans-serif}#lk div{background:#fff;border-radius:12px;padding:22px;max-width:380px;width:100%;box-shadow:0 2px 12px #0002;text-align:center}#lk h2{color:#0b6b3a;margin:0 0 6px;font-size:18px}#lk p{color:#555;font-size:13px;margin:6px 0 12px}#lk input{width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1px solid #9bb;border-radius:8px}#lk button{margin-top:10px;width:100%;padding:12px;font-size:16px;background:#0b6b3a;color:#fff;border:0;border-radius:8px}#lke{color:#b00020;font-size:13px;min-height:18px;margin-top:8px}</style>
-<div id="lk" style="display:none"><div><h2>LCA Welfare Group</h2><p>Enter the group passcode to load the member list on this phone. You only do this once.</p><input id="lkp" type="password" autocomplete="off" placeholder="Passcode (3 words)"><button id="lkb">Unlock</button><div id="lke"></div></div></div>
+<style>#lk{position:fixed;inset:0;background:#e6f3ec;display:flex;align-items:center;justify-content:center;padding:20px;z-index:99;font-family:system-ui,sans-serif}#lk div{background:#fff;border-radius:12px;padding:22px;max-width:380px;width:100%;box-shadow:0 2px 12px #0002;text-align:center}#lk h2{color:#0b6b3a;margin:0 0 6px;font-size:18px}#lk p{color:#555;font-size:13px;margin:6px 0 12px}#lk input[type=password],#lk input[type=text]{width:100%;box-sizing:border-box;padding:12px;font-size:16px;border:1px solid #9bb;border-radius:8px}#lk button{margin-top:10px;width:100%;padding:12px;font-size:16px;background:#0b6b3a;color:#fff;border:0;border-radius:8px}#lke{color:#b00020;font-size:13px;min-height:18px;margin-top:8px}</style>
+<div id="lk" style="display:none"><div><h2>LCA Welfare Group</h2><p>Enter the group passcode to load the member list on this phone. You only do this once.</p><input id="lkp" type="password" autocomplete="off" autocapitalize="none" placeholder="Passcode (3 words)"><label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:14px;color:#333;justify-content:center"><input id="lks" type="checkbox" style="width:20px;height:20px"> Show passcode</label><button id="lkb">Unlock</button><div id="lke"></div></div></div>
 <script type="text/plain" id="mainjs">
 // optional: Excel support when online
 (function(){var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onerror=function(){};document.head.appendChild(s)})();
@@ -605,6 +605,6 @@ var k=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b64(ENC.s),iterations:EN
 var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(ENC.i)},k,b64(ENC.c));
 window.SEED=JSON.parse(new TextDecoder().decode(pt));lk.style.display='none';run();try{save()}catch(e){}}
 catch(err){e.textContent=window.crypto&&crypto.subtle?'Wrong passcode. Try again.':'This browser cannot unlock the app. Open it in Chrome.'}}
-document.getElementById('lkb').onclick=go;document.getElementById('lkp').onkeydown=function(ev){if(ev.key==='Enter')go()};
+document.getElementById('lks').onchange=function(){document.getElementById('lkp').type=this.checked?'text':'password'};document.getElementById('lkb').onclick=go;document.getElementById('lkp').onkeydown=function(ev){if(ev.key==='Enter')go()};
 })();
 </script></body></html>
